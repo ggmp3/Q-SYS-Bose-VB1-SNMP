@@ -1,0 +1,2556 @@
+-- NOTES:
+-- Only utilise the 'Count' property within the Controls table within the Master_Object table if there is more than 1 control required.
+
+
+-- Information block for the plugin
+PluginInfo = {
+    Name = "Bose~VB1 Videobar (SNMP)", -- Name of the plugin
+    Version = "1.0", -- Current plugin version
+    Id = "qsysc.Bose VB1 (SNMP)", -- Unique identifier for the plugin. Must not conflict with other installed plugins
+    Description = "Plugin for control of the Bose VB1 Videobar using SNMP", -- A brief description of the plugin
+    BuildVersion = "0.0.0.0", -- Current code iteration tracking
+    Author = "Glen Gorton", -- Name or Contact Info of the author
+    Manufacturer = "Bose", -- Name of manufacturer the product the plugin integrates
+    -- Model = "", -- Model name of the product the plugin integrates
+    -- IsManaged = true, -- Add the plugin to the managed inventory of the design
+    -- Type = "", -- Reflect reporting type
+    ShowDebug = true,
+  }
+  
+  width = 400 -- scalable plugin width
+  control_depth = 16 -- scalable control depth
+  control_gap = 3 -- vertical space between controls
+  
+  Colors = {
+      none = {0, 0, 0, 0},
+      primary = {212, 202, 226},
+      secondary = {51, 51, 51},
+      heading = {50, 50, 50},
+      label = {50, 50, 50},
+      stroke = {51, 51, 51},
+      black = {51, 51, 51},
+      navy = {15, 63, 106},
+      lightblue = {143, 197, 247},
+      darkgrey = {58,58,58},
+      lightgrey = {204,204,204},
+      yellow = {255, 204, 51},
+      white = {255, 255, 255}
+  }
+  
+  Sizes = {
+      ["Button"] = {36, control_depth},
+      ["Text"] = {(width - 30) / 2.5, control_depth},
+      ["TextMultiple"] = {(width - 30) / 5.5, control_depth},
+      ["Status"] = {width - 30, (control_depth * 2) + (control_gap * 1)},
+      ["LED"] = {16, control_depth},
+      ["LEDButtonLarge"] = {36, control_depth * 2}, -- This large LED requires 2x GridPos
+      ["ListBox"] = {width - 30, (control_depth * 8) + (control_gap * 9)},
+      ["Image"] = {width - 30, (control_depth * 6) + (control_gap * 5)},
+      ["CameraImage"] = {width - 130, (control_depth * 10) + (control_gap * 9)},
+  }
+  
+  Master_Object = {{
+  
+      ["PageName"] = "Dashboard",
+  
+      ["Groupings"] = {{
+          ["Name"] = "Status",
+          ["Depth"] = 7,
+          ["Controls"] = {{
+            Name = "Status",
+            PrettyName = "Dashboard~Status",
+            Label = "Status",
+            ControlType = "Indicator",
+            IndicatorType = "Status",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Status,
+            GridPos = 1
+        }, {
+            Name = "Model Number",
+            PrettyName = "Dashboard~Model Number",
+            Label = "Model Number",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+        }, {
+            Name = "Serial Number",
+            PrettyName = "Dashboard~Serial Number",
+            Label = "Serial Number",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+        }, {
+            Name = "Firmware Version",
+            PrettyName = "Dashboard~Firmware Version",
+            Label = "Firmware Version",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 5
+        }, {
+            Name = "Firmware Upgrade Progress",
+            PrettyName = "Dashboard~Firmware Upgrade Progress",
+            Label = "Firmware Upgrade Progress",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 6
+        }, {
+            Name = "Camera Firmware Version",
+            PrettyName = "Dashboard~Camera Firmware Version",
+            Label = "Camera Firmware Version",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 7
+        }}
+    }, {
+          ["Name"] = "Network",
+          ["Depth"] = 11,
+          ["Controls"] = {{
+            Name = "Ethernet Enabled",
+            PrettyName = "Network~Ethernet Enabled",
+            Label = "Ethernet Enabled",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 1
+          }, {
+            Name = "Ethernet IP",
+            PrettyName = "Network~Ethernet IP",
+            Label = "Ethernet IP",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 2
+        }, {
+            Name = "MAC Address (Ethernet)",
+            PrettyName = "Network~MAC Address (Ethernet)",
+            Label = "MAC Address (Ethernet)",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+          }, {
+            Name = "Ethernet State",
+            PrettyName = "Network~Ethernet State",
+            Label = "Ethernet State",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+          }, {
+            Name = "DHCP (Ethernet)",
+            PrettyName = "Network~DHCP (Ethernet)",
+            Label = "DHCP (Ethernet)",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 5
+          }, {
+            Name = "Wifi Enabled",
+            PrettyName = "Network~Wifi Enabled",
+            Label = "Wifi Enabled",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 6
+          }, {
+            Name = "Wifi IP",
+            PrettyName = "Network~Wifi IP",
+            Label = "Wifi IP",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 7
+          }, {
+            Name = "MAC Address (Wifi)",
+            PrettyName = "Network~MAC Address (Wifi)",
+            Label = "MAC Address (Wifi)",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 8
+          }, {
+            Name = "Wifi State",
+            PrettyName = "Network~Wifi State",
+            Label = "Wifi State",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 9
+          }, {
+            Name = "DHCP (Wifi)",
+            PrettyName = "Network~DHCP (Wifi)",
+            Label = "DHCP (Wifi)",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 10
+          }, {
+            Name = "Wifi SSID",
+            PrettyName = "Network~Wifi SSID",
+            Label = "Wifi SSID",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 11
+        }}
+    }, {
+          ["Name"] = "Physical Connections",
+          ["Depth"] = 4,
+          ["Controls"] = {{
+            Name = "USB Connected",
+            PrettyName = "Physical Connections~USB Connected",
+            Label = "USB Connected",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 1
+          }, {
+            Name = "USB Call Status",
+            PrettyName = "Physical Connections~USB Call Status",
+            Label = "USB Call Status",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 2
+          }, {
+            Name = "GPI Mute State",
+            PrettyName = "Physical Connections~GPI Mute State",
+            Label = "GPI Mute State",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 3
+        }, {
+            Name = "HDMI Enabled",
+            PrettyName = "Physical Connections~HDMI Enabled",
+            Label = "HDMI Enabled",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 4
+        }}
+      }}
+    },{
+      ["PageName"] = "Audio & Video",
+
+      ["Groupings"] = {{
+        ["Name"] = "Audio",
+        ["Depth"] = 7,
+        ["Controls"] = {{
+            Name = "Microphone Mute",
+            PrettyName = "Audio~Microphone Mute",
+            Label = "Microphone Mute",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 1
+        }, {
+            Name = "Speaker Mute",
+            PrettyName = "Audio~Speaker Mute",
+            Label = "Speaker Mute",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 2
+          }, {
+            Name = "Speaker Volume",
+            PrettyName = "Audio~Speaker Volume",
+            Label = "Speaker Volume",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 100,
+            Min = 0,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+          }, {
+            Name = "Speaker Volume +",
+            PrettyName = "Audio~Speaker Volume +",
+            Label = "Speaker Volume +",
+            ControlType = "Button",
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 4
+          }, {
+            Name = "Speaker Volume -",
+            PrettyName = "Audio~Speaker Volume -",
+            Label = "Speaker Volume -",
+            ControlType = "Button",
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 5
+          }, {
+            Name = "Acoustic Echo Cancellation",
+            PrettyName = "Audio~Acoustic Echo Cancellation",
+            Label = "Acoustic Echo Cancellation",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 6
+          }, {
+            Name = "Room Compensation",
+            PrettyName = "Audio~Room Compensation",
+            Label = "Room Compensation",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 7
+        }}
+    }, {
+        ["Name"] = "Camera",
+        ["Depth"] = 9,
+        ["Controls"] = {{
+            Name = "Camera State",
+            PrettyName = "Camera~Camera State",
+            Label = "Camera State",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 1
+      }, {
+            Name = "Pan/Tilt (Up, Down, Left, Right)",
+            PrettyName = "Camera~Pant & Tilt",
+            Label = "Pan & Tilt",
+            ControlType = "Button",
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            --Width = "Full",
+            Size = Sizes.Button,
+            Count = 4,
+            GridPos = 2
+        }, {
+            Name = "Zoom (In, Out)",
+            PrettyName = "Camera~Zoom (In, Out)",
+            Label = "Zoom (In, Out)",
+            ControlType = "Button",
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            --Width = "Full",
+            Size = Sizes.Button,
+            Count = 2,
+            GridPos = 3
+        }, {
+            Name = "Camera Pan",
+            PrettyName = "Camera~Camera Pan",
+            Label = "Camera Pan",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 10,
+            Min = -10,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+        }, {
+            Name = "Camera Tilt",
+            PrettyName = "Camera~Camera Tilt",
+            Label = "Camera Tilt",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 10,
+            Min = -10,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 5
+        }, {
+            Name = "Camera Zoom",
+            PrettyName = "Camera~Camera Zoom",
+            Label = "Camera Zoom",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 10,
+            Min = -1,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 6
+        }, {
+            Name = "Preset (Press to Recall, Hold to Save)",
+            PrettyName = "Camera~Presets",
+            Label = "Presets",
+            ControlType = "Button",
+            ButtonType = "Momentary",
+            PinStyle = "Both",
+            UserPin = true,
+            --Width = "Full",
+            Size = Sizes.Button,
+            Count = 3,
+            GridPos = 7
+        }, {
+            Name = "Preset Active",
+            PrettyName = "Camera~Preset Active",
+            Label = "Preset Active",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LEDButtonLarge,
+            Count = 3,
+            GridPos = 8
+        }}
+    }, {
+        ["Name"] = "Autoframing",
+        ["Depth"] = 6,
+        ["Controls"] = {{
+            Name = "Camera Autoframing Access",
+            PrettyName = "Autoframing~Autoframing Access",
+            Label = "Autoframing Access",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 1
+        }, {
+            Name = "Camera Autoframing",
+            PrettyName = "Autoframing~Autoframing",
+            Label = "Autoframing Enabled",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 2
+        }, {
+            Name = "Camera Autoframe Headroom",
+            PrettyName = "Autoframing~Autoframe Headroom",
+            Label = "Headroom",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+        }, {
+            Name = "Camera Autoframe Zoom Speed",
+            PrettyName = "Autoframing~Autoframe Zoom Speed",
+            Label = "Zoom Speed",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+        }, {
+            Name = "Camera Autoframe Pan Tilt Speed",
+            PrettyName = "Autoframing~Autoframe Pan Tilt Speed",
+            Label = "Pan Tilt Speed",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 5
+        }, {
+            Name = "Camera Autoframe Border Size",
+            PrettyName = "Autoframing~Autoframe Border Size",
+            Label = "Border Size",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 6
+        }}
+    }, {
+        ["Name"] = "Image",
+        ["Depth"] = 7,
+        ["Controls"] = {{
+            Name = "Low Light Compensation",
+            PrettyName = "Image~Low Light Compensation",
+            Label = "Low Light Compensation",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 1
+        }, {
+            Name = "Backlight Compensation",
+            PrettyName = "Image~Backlight Compensation",
+            Label = "Backlight Compensation",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 2
+        }, {
+            Name = "Power Line Frequency",
+            PrettyName = "Image~Power Line Frequency",
+            Label = "Power Line Frequency",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+        }, {
+            Name = "Brightness",
+            PrettyName = "Image~Brightness",
+            Label = "Brightness",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 100,
+            Min = 0,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+        }, {
+            Name = "Contrast",
+            PrettyName = "Image~Contrast",
+            Label = "Contrast",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 100,
+            Min = 0,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 5
+        }, {
+            Name = "Saturation",
+            PrettyName = "Image~Saturation",
+            Label = "Saturation",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 100,
+            Min = 0,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 6
+        }, {
+            Name = "Sharpness",
+            PrettyName = "Image~Sharpness",
+            Label = "Sharpness",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 100,
+            Min = 0,
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 7
+        }}
+      }}
+    },{
+      ["PageName"] = "Bluetooth",
+
+      ["Groupings"] = {{
+        ["Name"] = "Bluetooth",
+        ["Depth"] = 8,
+        ["Controls"] = {{
+            Name = "Bluetooth Enabled",
+            PrettyName = "Bluetooth~Bluetooth Enabled",
+            Label = "Bluetooth Enabled",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 1
+        }, {
+            Name = "Bluetooth State",
+            PrettyName = "Bluetooth~Bluetooth State",
+            Label = "Bluetooth State",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 2
+          }, {
+            Name = "Bluetooth Connected",
+            PrettyName = "Bluetooth~Bluetooth Connected",
+            Label = "Bluetooth Connected",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 3
+          }, {
+            Name = "Bluetooth Streaming",
+            PrettyName = "Bluetooth~Bluetooth Streaming",
+            Label = "Bluetooth Streaming",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 4
+          }, {
+            Name = "Bluetooth Call Status",
+            PrettyName = "Bluetooth~Bluetooth Call Status",
+            Label = "Bluetooth Call Status",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 5
+          }, {
+            Name = "Bluetooth Pairing",
+            PrettyName = "Bluetooth~Bluetooth Pairing",
+            Label = "Bluetooth Pairing Enabled",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 6
+          }, {
+            Name = "Bluetooth Paired Device",
+            PrettyName = "Bluetooth~Bluetooth Paired Device",
+            Label = "Bluetooth Paired Device",
+            ControlType = "Indicator",
+            IndicatorType = "Text",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 7
+          }, {
+            Name = "Bluetooth Disconnect Device",
+            PrettyName = "Bluetooth~Bluetooth Disconnect Device",
+            Label = "Bluetooth Disconnect Device",
+            ControlType = "Button",
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 8
+        }}
+      }}
+    },{
+      ["PageName"] = "People Counting (VB1)",
+
+      ["Groupings"] = {{
+        ["Name"] = "People Counting",
+        ["Depth"] = 4,
+        ["Controls"] = {{
+            Name = "People Present",
+            PrettyName = "People Counting~People Present",
+            Label = "People Present",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 1
+        }, {
+            Name = "People Count",
+            PrettyName = "People Counting~People Count",
+            Label = "People Count",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 99,
+            Min = 0,
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 2
+        }, {
+            Name = "People Count Check",
+            PrettyName = "People Counting~People Count Check",
+            Label = "People Count Check (sec)",
+            ControlType = "Knob", 
+            ControlUnit = "Integer",
+            Style = "Text",
+            Max = 99,
+            Min = 0,
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+          }, {
+            Name = "People Count Event Log",
+            PrettyName = "People Counting~People Count Event Log",
+            Label = "People Count Event Log",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 4
+        }}
+      }}
+    },{
+      ["PageName"] = "Setup",
+  
+      ["Groupings"] = {{
+          ["Name"] = "Connection",
+          ["Depth"] = 14,
+          ["Controls"] = {{
+            Name = "Connect",
+            PrettyName = "Setup~Connect",
+            Label = "Connect",
+            ControlType = "Button",
+            ButtonType = "Toggle",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 1
+        }, {
+            Name = "Connected",
+            PrettyName = "Setup~Connected",
+            Label = "Connected",
+            ControlType = "Indicator",
+            IndicatorType = "LED",
+            PinStyle = "Output",
+            UserPin = true,
+            Size = Sizes.LED,
+            GridPos = 2
+        }, {
+            Name = "IP Address",
+            PrettyName = "Setup~IP Address",
+            Label = "IP Address",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+        }, {
+            Name = "SNMP Username",
+            PrettyName = "Setup~SNMP Username",
+            Label = "SNMP Username",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+        }, {
+            Name = "SNMP Authentication Type",
+            PrettyName = "Setup~SNMP Authentication Type",
+            Label = "SNMP Authentication Type",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 5
+        }, {
+            Name = "SNMP Authentication Protocol",
+            PrettyName = "Setup~SNMP Authentication Protocol",
+            Label = "SNMP Authentication Protocol",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 6
+        }, {
+            Name = "SNMP Authentication Password",
+            PrettyName = "Setup~SNMP Authentication Password",
+            Label = "SNMP Authentication Password",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 7
+        }, {
+            Name = "SNMP Privacy Protocol",
+            PrettyName = "Setup~SNMP Privacy Protocol",
+            Label = "SNMP Privacy Protocol",
+            ControlType = "Text",
+            Style = "ComboBox",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 8
+        }, {
+            Name = "SNMP Privacy Password",
+            PrettyName = "Setup~SNMP Privacy Password",
+            Label = "SNMP Privacy Password",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 9
+        }, {
+            Name = "Delay Between Commands",
+            PrettyName = "Setup~Delay Between Commands",
+            Label = "Delay Between Commands",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 10
+        }, {
+            Name = "Event Log Prefix",
+            PrettyName = "Setup~Event Log Prefix",
+            Label = "Event Log Prefix",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 11
+        }, {
+            Name = "Log Entry",
+            PrettyName = "Setup~Log Entry",
+            Label = "Log Entry",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 12
+        }, {
+            Name = "Log Severity",
+            PrettyName = "Setup~Log Severity",
+            Label = "Log Severity",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 13
+        }, {
+            Name = "Log Trigger",
+            PrettyName = "Setup~Log Trigger",
+            Label = "Log Trigger",
+            ControlType = "Button", 
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 14
+        }}
+    }, {
+        ["Name"] = "Device",
+        ["Depth"] = 7,
+        ["Controls"] = {{
+            Name = "Name",
+            PrettyName = "Setup~Name",
+            Label = "Name",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 1
+        }, {
+            Name = "Building",
+            PrettyName = "Setup~Building",
+            Label = "Building",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 2
+        }, {
+            Name = "Floor",
+            PrettyName = "Setup~Floor",
+            Label = "Floor",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 3
+        }, {
+            Name = "Room",
+            PrettyName = "Setup~Room",
+            Label = "Room",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 4
+        }, {
+            Name = "Capacity",
+            PrettyName = "Setup~Capacity",
+            Label = "Capacity",
+            ControlType = "Text",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Text,
+            GridPos = 5
+          }, {
+            Name = "Reboot",
+            PrettyName = "Setup~Reboot",
+            Label = "Reboot",
+            ControlType = "Button",
+            ButtonType = "Trigger",
+            PinStyle = "Both",
+            UserPin = true,
+            Size = Sizes.Button,
+            GridPos = 7
+      }}
+    }}
+  }}
+  
+  
+  -- Define the color of the plugin object when dragged into the design
+  function GetColor(props)
+      return Colors.black
+  end
+  
+  -- The name that will initially display when dragged into a design
+  function GetPrettyName(props)
+    return string.format("Bose\nVB1 Videobar (SNMP)\n[%s]", PluginInfo.Version)
+  end
+  
+  -- Define User configurable Properties of the plugin
+  function GetProperties()
+      local props = {}
+      return props
+  end
+  
+  -- Optional function used if plugin has multiple pages
+  function GetPages(props)
+      local pages = {}
+      for i, tbl in ipairs(Master_Object) do
+        table.insert(pages, {name = tbl.PageName})
+      end
+      return pages
+  end
+  
+  -- Optional function to define pins on the plugin that are not connected to a Control
+  function GetPins(props)
+      local pins = {}
+      return pins
+  end
+  
+  -- Optional function to update available properties when properties are altered by the user
+  function RectifyProperties(props)
+      return props
+  end
+  
+  -- Optional function to define components used within the plugin
+  function GetComponents(props)
+      local components = {}
+      return components
+  end
+  
+  -- Optional function to define wiring of components used within the plugin
+  function GetWiring(props)
+      local wiring = {}
+      return wiring
+  end
+  
+  -- Defines the Controls used within the plugin
+  function GetControls(props)
+      local ctls = {}
+      for i, page in ipairs(Master_Object) do
+        for i, grouping in ipairs(page.Groupings) do
+            for i, control in ipairs(grouping.Controls) do
+                table.insert(ctls, control)
+            end
+        end
+      end
+      return ctls
+  end
+  
+  -- Layout of controls and graphics for the plugin UI to display
+  function GetControlLayout(props)
+      local graphics, layout, control_slots = {}, {}, {}
+      
+      local page_index = props["page_index"].Value
+      
+      -- starting depth
+      local total_depth = 0
+      
+      -- dynamically create graphics boxes
+      for i, grouping in ipairs(Master_Object[page_index].Groupings) do
+      
+          total_depth = total_depth + control_depth
+      
+          depth = grouping.Depth
+      
+          len = string.len(grouping.Name)
+      
+          table.insert(graphics, {
+              Type = "GroupBox",
+              Fill = Colors.black,
+              StrokeColor = Colors.stroke,
+              StrokeWidth = 2,
+              CornerRadius = 8,
+              HTextAlign = "Left",
+              Position = {
+                  0,
+                  total_depth
+              },
+              Size = {
+                  width,
+                  40 + (depth * control_depth) + ((depth - 1) * control_gap)
+              }
+          })
+      
+          -- generate control slots per group box depth and control_depth requirement
+      
+          grouping["Control_Slots"] = {}
+      
+          for n = 1, grouping.Depth do
+      
+              grouping["Control_Slots"][n] = ((total_depth + 25) + (control_depth * (n - 1)) + ((n - 1) * control_gap))
+      
+          end
+      
+          -- dynamically create groupbox labels
+          table.insert(graphics, {
+              Type = "Label",
+              Text = Master_Object[page_index].Groupings[i].Name,
+              -- Size = 11,
+              Color = {
+                  255,
+                  255,
+                  255
+              },
+              Fill = Colors.heading,
+              StrokeWidth = 0,
+              CornerRadius = 4,
+              Position = {
+                  15,
+                  total_depth - 8
+              },
+              Size = {
+                  len <= 12 and 90 or len <= 20 and 140 or len <= 30 and 170,
+                  18
+              },
+              Font = "Montserrat",
+              FontStyle = "Medium"
+          })
+      
+          total_depth = total_depth + 40 + ((depth * control_depth) + ((depth - 1) * control_gap))
+      
+      end
+      
+      -- width of the group box minus borders
+      local box_width = (width - 60)
+      
+      for i, grouping in ipairs(Master_Object[page_index].Groupings) do
+      
+          local Slots = grouping.Control_Slots
+      
+          for _, ctl in ipairs(grouping.Controls) do
+      
+              local pos_x = nil
+              local pos_y = nil
+      
+              if (ctl.Width and (ctl.Width == "Full")) then
+                  pos_x = 15
+                  pos_y = (Slots[ctl.GridPos] + control_depth + control_gap)
+              else
+                  if (ctl.Position) then
+                      pos_x = ctl.Position
+                  else
+                      pos_x = (width - 15) - ctl.Size[1]
+                  end
+                  pos_y = Slots[ctl.GridPos]
+              end
+      
+              -- Only runs if the 'Count' property is present in the Controls properties.
+              if ctl.Count then
+              
+                local name = ctl.Name
+                local prettyname = ctl.PrettyName
+                local size = ctl.Size
+              
+                  for n = 1 , ctl.Count do
+                    
+                    -- for controls with a control count > 1. Sort the pins into groups and add the number to the name
+                    if ctl.Count > 1 then
+                        prettyname = ctl.PrettyName..'~'..n
+                        name = ctl.Name.." "..n
+                    
+                    -- add the control to the control column, multiple controls are added left to right
+                    layout[name] = {
+                        PrettyName = prettyname,
+                        Legend = ctl.Legend,
+                        Style = ctl.Style,
+                        Size = ctl.Size,
+                        Position = {
+                          pos_x - ctl.Count * ctl.Size[1] +  n * ctl.Size[1],
+                          pos_y
+                        },
+                        Font = "Droid Sans",
+                        FontSize = 8
+                      }
+                    end
+                  end
+  
+                else
+                -- add the controls where the control count = 1
+                layout[ctl.Name] = {
+                    PrettyName = ctl.PrettyName,
+                    Legend = ctl.Legend,
+                    Style = ctl.Style,
+                    Position = {
+                        pos_x,
+                        pos_y
+                    },
+                    Size = ctl.Size,
+                    Font = "Droid Sans",
+                    FontSize = 8
+                  }
+              end
+              
+              -- Only runs if the Controls properties contain the 'Label' property.
+              if ctl.Label then
+                -- Only runs if the 'Count' property is present in the Controls properties.
+                if ctl.Count then
+                  table.insert(graphics, {
+                    Type = "Label",
+                    Text = ctl.Label,
+                    HTextAlign = "Left",
+                    Color = Colors.white,
+                    Font = "Droid Sans",
+                    Position = {
+                        15,
+                        (Slots[ctl.GridPos] ~= nil) and Slots[ctl.GridPos] or Slots[#Slots]
+                    },
+                    Size = {
+                        (ctl.Width == "Full") and (width - 30) or (width - 30) - ctl.Count * ctl.Size[1],
+                        control_depth
+                    }
+                })
+                else
+                  table.insert(graphics, {
+                      Type = "Label",
+                      Text = ctl.Label,
+                      HTextAlign = "Left",
+                      Color = Colors.white,
+                      Font = "Droid Sans",
+                      Position = {
+                          15,
+                          (Slots[ctl.GridPos] ~= nil) and Slots[ctl.GridPos] or Slots[#Slots]
+                      },
+                      Size = {
+                          (ctl.Width == "Full") and (width - 30) or (width - 30) - ctl.Size[1],
+                          control_depth
+                      }
+                  })
+                end
+              end
+      
+          end
+      
+      end
+      return layout, graphics
+  end
+  
+  
+  
+  ------------------------ USER COMPONENT Runtime Code is below wrapped inside of 'if Controls then...user script...end'
+  --Start event based logic
+  if Controls then
+
+--[[
+# Q-SYS-Bose-VB1-Videobar-SNMPv3
+
+- Bose VB1 Q-Sys Plugin (SNMP)
+- Written by Glen Gorton (glen.gorton@gmail.com)
+- Tested with Firmware version 1.5.1_75ebaa7
+
+## NOTES:
+- Bose SNMP documentation advises the 'Context' field within the SNMP message configuration must be set to "my-context", however have found this is not required.
+
+- 'Disconnect Bluetooth Device' -- bluetooth.disconnect (1.3.6.1.4.1.6036.727.228)
+REST API has the ability to send Values 1, 2 or 3 but no information on what these do. Found 1 and 3 will disconnect the currently connected bluetooth device, and 2 will do nothing.
+'Bluetooth Disconnect Device' EventHandler is sending a Value of 1.
+
+- 'USB Call Status'
+MS Teams and Zoom must have Bose VB1 selected as the microphone in order for the response to be true ("1"). Tested with Zoom Workplace Version: 6.1.1 (41705) and Microsoft Teams version 24165.1414.2987.41.
+
+- 'System Name'
+Device loses connectivity when system.name is changed via SNMP, REST API or HTTP interface. SNMP Guide documents says "Reboot on Update: no".
+When changing name via HTTP interface a prompt warns the device will reboot. Informed Bose of incorrect documentation.
+Script functions as if the Reboot function has been triggered, setting Status to Initialzing - Device Rebooting...
+
+- system.hdmiConnected (.1.3.6.1.4.1.6036.727.259) - "Specifies HDMI connected or disconnected state." Always responds with 'disconnected' even with HDMI monitor/display connected and being used as third PC monitor.
+Response is also always 'disconnected' whether 'DisplayLink' is enabled or disabled.
+HDMI port does work, but the system.hdmiConnected does not report accurately.
+Control has NOT been added to script/plugin.
+
+]]--
+
+
+
+---- Constants ---------
+Presets = {"Home", "1", "2"}
+PeopleCount = 0
+
+-- Table of Controls that will be "cleared" at Initialize
+TextIndicators = {"Model Number", "Serial Number", "MAC Address (Ethernet)", "MAC Address (Wifi)", "Firmware Version", "Name", "Building", "Floor", "Room", "Capacity", "Ethernet State", "Wifi State", 
+"Camera State", "Camera Firmware Version", "Firmware Upgrade Progress", "Bluetooth Paired Device", "Wifi IP", "Wifi SSID", "Ethernet IP", "Log Entry", "Log Severity"}
+
+IntegerIndicators = {"Camera Pan", "Camera Tilt", "Camera Zoom", "Speaker Volume", "Brightness", "Contrast", "Saturation", "Sharpness", "People Count"}
+
+
+-- Control Choices --
+
+-- Moved to the first lines of "function requestSNMP()" as the VB1 and VB-S have different capabilities.
+--Controls["Backlight Compensation"].Choices = {"off", "low", "medium", "high"} --> VB1
+--Controls["Backlight Compensation"].Choices = {"off", "on"} --> VB-S
+
+Controls["Camera Autoframe Border Size"].Choices = {"small", "normal", "large"}
+Controls["Camera Autoframe Headroom"].Choices = {"sitting", "standing"}
+Controls["Camera Autoframe Pan Tilt Speed"].Choices = {"slow", "normal", "fast"}
+Controls["Camera Autoframe Zoom Speed"].Choices = {"slow", "normal", "fast"}
+Controls["Power Line Frequency"].Choices = {"off", "50", "60"}
+
+---- SNMP v3 Connection Details
+--SNMPUsername = Controls["SNMP Username"].String
+--SNMPAuthPassword = Controls["SNMP Authentication Password"].String
+--SNMPPrivPassword = Controls["SNMP Privacy Password"].String
+
+
+Controls["SNMP Authentication Type"].Choices = {'NoAuthentication', 'AuthNoPriv', 'AuthWithPriv'}
+authtypedata = {
+  NoAuthentication = SNMP.AuthType.AuthNo,
+  AuthNoPriv = SNMP.AuthType.AuthNoPriv,
+  AuthWithPriv = SNMP.AuthType.AuthPriv,
+  }
+
+Controls["SNMP Authentication Protocol"].Choices = {'NoAuthentication', 'ProtocolMD5', 'ProtocolSHA'}
+authprotdata = {
+  NoAuthentication = SNMP.AuthProtocol.NoAuth,
+  ProtocolMD5 = SNMP.AuthProtocol.MD5,
+  ProtocolSHA = SNMP.AuthProtocol.SHA,  
+}
+
+Controls["SNMP Privacy Protocol"].Choices = {'NoAuthentication', 'ProtocolAES', 'ProtocolDES'}
+authprivdata = {
+  NoAuthentication = SNMP.PrivProtocol.NoAuth,
+  ProtocolAES = SNMP.PrivProtocol.AES,
+  ProtocolDES = SNMP.PrivProtocol.DES,  
+}
+
+---- Tables ----
+EventLogs = {}
+
+
+
+---- OID Query Lists ----
+
+-- Get Model Number first.
+ModelQuery = {
+'.1.3.6.1.4.1.6036.727.214', -- system.model - Model Number - "Model of this device"
+}
+
+QueryListVB1 = {
+-- Below work on VB1 and VB-S
+'.1.3.6.1.4.1.6036.727.16', -- system.serialNumber - Serial Number - "Serial number of the device."
+'.1.3.6.1.4.1.6036.727.22', -- system.firmwareVersion - Firmware Version - "Firmware version of the firmware running on the device. This is set automatically on system firmware upgrade."
+'.1.3.6.1.4.1.6036.727.99', -- camera.firmwareVersion  - Camera Firmware Version - "Firmware version of the camera firmware running on the device. This is set automatically on system firmware upgrade."
+'.1.3.6.1.4.1.6036.727.172', -- wifi.mac - MAC Address (Wifi) - "MAC address of the WiFi interface."
+'.1.3.6.1.4.1.6036.727.37', -- system.name - Name - "Human readable name of the device so it can be uniquely identified over external interfaces."
+'.1.3.6.1.4.1.6036.727.40', -- system.building - Building - "Human readable building location of the device."
+'.1.3.6.1.4.1.6036.727.39', -- system.floor - Floor - "Human readable floor location of the device."
+'.1.3.6.1.4.1.6036.727.38', -- system.room - Room - "Human readable room location of the device."
+'.1.3.6.1.4.1.6036.727.223', -- system.maxOccupancy - Capacity - "Room maximum occupancy of the device."
+'.1.3.6.1.4.1.6036.727.161', -- wifi.dhcpState  - DHCP (Wifi) - "DHCP state. When DHCP state is on, WiFi will be configured through DHCP. When DHCP state is off, static values are used."
+'.1.3.6.1.4.1.6036.727.176', -- wifi.state - Wifi State - "State of the WiFi module."
+'.1.3.6.1.4.1.6036.727.167', -- wifi.ipDhcp - Wifi IP - "DHCP IP address when DHCP state is on and DHCP is successful."
+'.1.3.6.1.4.1.6036.727.179', -- wifi.ssid - Wifi SSID - "SSID of WiFi network to join/autoconnect to."
+'.1.3.6.1.4.1.6036.727.199', -- system.gpiMuteStatus - GPI Mute State - "Shows GPI mute status on/off. (Ctrl Input: Use the port for mute override using the included 2-pin Euroblock connector. By default, this input is active low and includes an internal pull-up.)"
+'.1.3.6.1.4.1.6036.727.58', -- behavior.bluetoothEnabled - Bluetooth Enabled - "Turns on/off the system Bluetooth."
+'.1.3.6.1.4.1.6036.727.59', -- behavior.wifiEnabled - Wifi Enabled - "Turns on/off the system WiFi."
+'.1.3.6.1.4.1.6036.727.54', -- usb.connectionStatus - USB Connected - "USB cable connection status, 0 when disconnected."
+'.1.3.6.1.4.1.6036.727.55', -- usb.callStatus - USB Call Status - "Call status from the host connected to USB port of the system."
+'.1.3.6.1.4.1.6036.727.2', -- audio.micMute - Microphone Mute - "Mutes/unmutes the system microphone."
+'.1.3.6.1.4.1.6036.727.51', -- audio.loudspeakerMute - Speaker Mute - "Mutes/unmutes the system loudspeaker."
+'.1.3.6.1.4.1.6036.727.3', -- audio.loudspeakerVolume - Speaker Volume - "Sets the system loudspeaker volume."
+'.1.3.6.1.4.1.6036.727.61', -- behavior.aecEnabled - Acoustic Echo Cancellation - "Turns on/off the acoustic echo canceller."
+'.1.3.6.1.4.1.6036.727.221', -- audio.roomCompensation - Room Compensation - "Enables processing to compensate for very reverberant rooms."
+'.1.3.6.1.4.1.6036.727.6', -- camera.zoom - Camera Zoom - "Contains the current camera zoom value."
+'.1.3.6.1.4.1.6036.727.7', -- camera.pan - Camera Pan - "Contains the current camera pan value."
+'.1.3.6.1.4.1.6036.727.8', -- camera.tilt - Camera Tilt - "Contains the current camera tilt value."
+'.1.3.6.1.4.1.6036.727.19', -- camera.activePreset - Preset Active - "This is the active preset. Note: at camera start or restart the active preset is set to Home."
+'.1.3.6.1.4.1.6036.727.86', -- camera.homePreset - Preset PTZ Positions (Home Preset) - "Camera home preset in pan tilt zoom order."
+'.1.3.6.1.4.1.6036.727.87', -- camera.firstPreset - Preset PTZ Positions (Preset 1) - "Camera first preset in pan tilt zoom order."
+'.1.3.6.1.4.1.6036.727.88', -- camera.secondPreset - Preset PTZ Positions (Preset 2) - "Camera second preset in pan tilt zoom order."
+'.1.3.6.1.4.1.6036.727.96', -- camera.state - Camera State - "Camera state. When active camera is streaming video, when inactive camera is not streaming, when upgrading camera is upgrading firmware."
+'.1.3.6.1.4.1.6036.727.25', -- autoframing.state - Camera Autoframing - "Turn on/off the camera autoframing feature."
+'.1.3.6.1.4.1.6036.727.26', -- behavior.autoframingEnabled - Camera Autoframing Access - "Turns on/off autoframing access."
+'.1.3.6.1.4.1.6036.727.132', -- autoframing.border - Camera Autoframe Border Size - "Describes how agressive the algorithm is in framing content."
+'.1.3.6.1.4.1.6036.727.133', -- autoframing.headroom - Camera Autoframe Headroom - "Headroom adjustment for participants when autoframing."
+'.1.3.6.1.4.1.6036.727.130', -- autoframing.panTiltSpeed - Camera Autoframe Pan Tilt Speed - "Pan and tilt speed for autoframing."
+'.1.3.6.1.4.1.6036.727.131', -- autoframing.zoomSpeed - Camera Autoframe Zoom Speed - "Zoom for autoframing."
+'.1.3.6.1.4.1.6036.727.89', -- camera.lowLightCompensationState - Low Light Compensation - "Tunrs on/off camera low light compensation."
+'.1.3.6.1.4.1.6036.727.196', -- camera.backlightCompensation - Backlight Compensation - "Sets compensation for bright backgrounds."
+'.1.3.6.1.4.1.6036.727.90', -- camera.antiflicker - Power Line Frequency - "Sets power line frequency value to reduce anti flicker."
+'.1.3.6.1.4.1.6036.727.92', -- camera.brightness - Brightness - "Sets image brightness."
+'.1.3.6.1.4.1.6036.727.93', -- camera.contrast - Contrast - "Sets image contrast."
+'.1.3.6.1.4.1.6036.727.94', -- camera.saturation - Saturation - "Sets image saturation."
+'.1.3.6.1.4.1.6036.727.95', -- camera.sharpness - Sharpness - "Sets image sharpness."
+'.1.3.6.1.4.1.6036.727.103', -- bluetooth.state - Bluetooth State - "Bluetooth and BLE state. The on state will indicate that Bluetooth and BLE are on, the off state will indicate that the Bluetooth and BLE are off."
+'.1.3.6.1.4.1.6036.727.20', -- bluetooth.pairingState - Bluetooth Pairing - "Bluetooth pairing state. The on state will allow pairing with the device for a fixed interval. Once the pairing interval is over, the state will change to off."
+'.1.3.6.1.4.1.6036.727.106', -- bluetooth.paired - Bluetooth Paired Device Name - "Bluetooth Paired device name."
+'.1.3.6.1.4.1.6036.727.107', -- bluetooth.connected - Bluetooth Connected - "Shows if connected to the paired device or not."
+'.1.3.6.1.4.1.6036.727.194', -- bluetooth.streamState - Bluetooth Stream State - "Stream status of Bluetooth."
+'.1.3.6.1.4.1.6036.727.108', -- bluetooth.callState - Bluetooth Call State - "Call status of Bluetooth call."
+'.1.3.6.1.4.1.6036.727.32', -- system.firmwareUpdateStatus -- Notify to this parameter will notify with firmware update status in percent (0 - 100).
+
+
+-- Below only work on VB1
+'.1.3.6.1.4.1.6036.727.128', -- network.mac - MAC Address (Ethernet) - "MAC address of the LAN interface."
+'.1.3.6.1.4.1.6036.727.116', -- network.dhcpState - DHCP (Ethernet) - "DHCP state. When DHCP state is on, network will be configured through DHCP. When DHCPstate is off, static values are used."
+'.1.3.6.1.4.1.6036.727.127', -- network.state - Ethernet State - "State of the Ethernet module."
+'.1.3.6.1.4.1.6036.727.122', -- network.ipDhcp - Ethernet IP - "DHCP IP address when DHCP state is on and DHCP is successful."
+'.1.3.6.1.4.1.6036.727.56', -- behavior.ethernetEnabled - Ethernet Enabled - "Turns on/off the system Ethernet interface."
+'.1.3.6.1.4.1.6036.727.201', -- behavior.hdmiEnabled - HDMI Enabled - "Turns on/off the HDMI."
+'.1.3.6.1.4.1.6036.727.220', -- telemetry.peoplePresent - People Present - "True when any people have been detected by the camera autoframing algorithm."
+'.1.3.6.1.4.1.6036.727.218', -- telemetry.peopleCount - People Count - "The number of people counted by the camera autoframing algorithm."
+}
+
+
+
+---- Script Variables ----
+
+ActiveQueryList = {}
+listPtr = 1
+
+---- Functions ----
+
+-- Send SNMP get Request.
+function requestSNMP()
+  
+  -- Stop the poll timer. Will be restarted at the end of the requestSNMP() function.
+  OIDpoll_timer:Stop()
+
+  -- Model Number OID Request is sent first which defines which QueryList table to use and Backlight Compensation control choices, based on the model#.
+  if Controls["Model Number"].String == "VB1" then
+    ActiveQueryList = QueryListVB1
+    --print("Sending OIDs from QueryListPDU81004 Table.")
+    Controls["Backlight Compensation"].Choices = {"off", "low", "medium", "high"} --> VB1
+  elseif Controls["Model Number"].String == "VB-S" then
+    ActiveQueryList = QueryListVBS 
+    --print("Sending OIDs from QueryListPDU41004 Table.")
+    Controls["Backlight Compensation"].Choices = {"off", "on"} --> VB-S
+  elseif Controls["Model Number"].String == "" then
+    ActiveQueryList = ModelQuery
+    print("ModelQuery OID being sent...")
+  else
+    print("ERROR - No QueryList Table to support this Model#")
+    SetStatus(2, "No QueryList Table to support this Model#")
+    SNMPresponse_timer:Stop() return
+  end
+
+  print("Send",listPtr.." of "..#ActiveQueryList,ActiveQueryList[listPtr])
+  snmp_session:getRequest(ActiveQueryList[listPtr], myCallback)
+  listPtr = (listPtr == #ActiveQueryList) and 1 or listPtr + 1
+
+  --[[ If no SNMP response is received after set time, the timer will call the SNMPnoresponse() function that will SetStatus to Fault.]]--
+  SNMPresponse_timer:Start(20)
+  --print(SNMPresponse_timer:IsRunning()) -- should print true
+
+  snmp_session.EventHandler = function(response)
+    --print("Response OID: "..response.OID .." value = " ..response.Value .." from " ..response.HostName ..". RequestID is: "..response.RequestID)
+    --print(response.Value)
+    --print(string.format('Received Response: [%s]', response.OID))
+
+    --print("OID Start")
+    --for k,v in pairs(response) do
+      --print(k,v)
+    --end
+    --print("OID End")
+
+    
+    -- Found when a setrequest is sent, the Bose VB1 will respond to the OID with "EE 80 80 " which would populate in the controls.
+    -- Have added this to end the immediate 'snmp_session.EventHandler = function(response)' following the setrequest.
+    if string.sub(response.Value, 2, -2) == "EE 80 80 " then
+      print("Found EE 80 80 within response.")
+    return end
+
+
+    -- Model Number OID
+    if response.OID == "iso.3.6.1.4.1.6036.727.214" then
+      Model = tostring(string.upper(string.sub(response.Value, 2, -2)))
+      if Model then
+        Controls["Model Number"].String = Model
+        --print("Model Number: "..Model)
+      end
+
+    -- Serial Number OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.16" then
+      Serial = tostring(string.sub(response.Value, 2, -2))
+      if Serial then
+        Controls["Serial Number"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Serial Number: "..Serial)          
+      end
+
+    -- Firmware Version OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.22" then
+      FirmwareVersion = tostring(string.sub(response.Value, 2, -2))
+      if FirmwareVersion then
+        Controls["Firmware Version"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Firmware Version: "..FirmwareVersion)
+      end
+
+    -- Firmware Upgrade Progress OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.32" then
+      FirmwareUpgradeProgress = tostring(string.sub(response.Value, 2, -2))
+      if FirmwareUpgradeProgress then
+        Controls["Firmware Upgrade Progress"].String = tostring(string.sub(response.Value, 2, -2)).."%"
+        --print("Firmware Upgrade Progress: "..FirmwareUpgradeProgress.."%")
+      end
+
+    -- Camera Firmware Version OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.99" then
+      CameraFirmwareVersion = tostring(string.sub(response.Value, 2, -2))
+      if CameraFirmwareVersion then
+        Controls["Camera Firmware Version"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Camera Firmware Version: "..CameraFirmwareVersion)
+      end
+
+    -- MAC Address (Ethernet) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.128" then
+      MACAddressEthernet = tostring(string.sub(response.Value, 2, -2))
+      if MACAddressEthernet then
+        Controls["MAC Address (Ethernet)"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("MAC Address (Ethernet): "..MACAddressEthernet)
+      end
+
+    -- MAC Address (Wifi) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.172" then
+      MACAddressWifi = tostring(string.sub(response.Value, 2, -2))
+      if MACAddressWifi then
+        Controls["MAC Address (Wifi)"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("MAC Address (Wifi): "..MACAddressWifi)
+      end
+
+    -- Device Name OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.37" then -- Device Name OID
+      DeviceName = tostring(string.sub(response.Value, 2, -2))
+      if DeviceName then
+        Controls["Name"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Device Name: "..DeviceName)
+      end
+
+    -- Device Location (Building) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.40" then
+      DeviceLocationBuilding = tostring(string.sub(response.Value, 2, -2))
+      if DeviceLocationBuilding then
+        Controls["Building"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Device Location (Building): "..DeviceLocationBuilding)
+      end
+
+    -- Device Location (Floor) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.39" then
+      DeviceLocationFloor = tostring(string.sub(response.Value, 2, -2))
+      if DeviceLocationFloor then
+        Controls["Floor"].String = tostring(string.sub(response.Value, 2, -2))  
+        --print("Device Location (Floor): "..DeviceLocationFloor)
+      end
+
+    -- Device Location (Room) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.38" then
+      DeviceLocationRoom = tostring(string.sub(response.Value, 2, -2))
+      if DeviceLocationRoom then
+        Controls["Room"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Device Location (Room): "..DeviceLocationRoom)
+      end
+
+    -- Device Location (Room Capacity) OID    
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.223" then
+      DeviceLocationCapacity = tostring(string.sub(response.Value, 2, -2))
+      if DeviceLocationCapacity then
+        Controls["Capacity"].String = tostring(string.sub(response.Value, 2, -2))
+        --print("Device Location (Capacity): "..DeviceLocationCapacity)
+      end
+    
+    -- DHCP State (Ethernet)
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.116" then
+      DHCPState = tostring(string.sub(response.Value, 2, -2))
+      if DHCPState then
+        Controls["DHCP (Ethernet)"].Value = DHCPState
+        --if DHCPState == "1" then print("DHCP (Ethernet) is ON") elseif DHCPState == "0" then print("DHCP (Ethernet) is OFF") end
+      end
+
+    -- DHCP State (Wifi)
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.161" then
+      DHCPStateWifi = tostring(string.sub(response.Value, 2, -2))
+      if DHCPStateWifi then
+        Controls["DHCP (Wifi)"].Value = DHCPStateWifi
+        --if DHCPStateWifi == "1" then print("DHCP (Wifi) is ON") elseif DHCPStateWifi == "0" then print("DHCP (Wifi) is OFF") end
+      end
+
+    -- Ethernet State OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.127" then
+      EthernetState = tostring(string.sub(response.Value, 2, -2))
+      if EthernetState then
+        Controls["Ethernet State"].String = EthernetState:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Ethernet State: "..EthernetState:gsub("^%l", string.upper))
+      end
+
+    -- Ethernet IP DHCP OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.122" then
+      EthernetIPDHCP = tostring(string.sub(response.Value, 2, -2))
+      if EthernetIPDHCP then
+        Controls["Ethernet IP"].String = EthernetIPDHCP
+        --print("Ethernet IP (DHCP): "..EthernetIPDHCP)
+      end
+
+    -- Wifi State OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.176" then
+      WifiState = tostring(string.sub(response.Value, 2, -2))
+      if WifiState then
+        Controls["Wifi State"].String = WifiState:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Wifi State: "..WifiState:gsub("^%l", string.upper))
+      end
+
+    -- Wifi IP DHCP OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.167" then
+      WifiIPDHCP = tostring(string.sub(response.Value, 2, -2))
+      if WifiIPDHCP then
+        Controls["Wifi IP"].String = WifiIPDHCP
+        --print("Wifi IP (DHCP): "..WifiIPDHCP)
+      end
+
+    -- Wifi SSID OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.179" then
+      WifiSSID = tostring(string.sub(response.Value, 2, -2))
+      if WifiSSID then
+        Controls["Wifi SSID"].String = WifiSSID
+        --print("Wifi SSID: "..WifiSSID)
+      end
+
+    -- GPI Mute State OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.199" then
+      GPIMuteState = tostring(string.sub(response.Value, 2, -2))
+      if GPIMuteState then
+        Controls["GPI Mute State"].Value = GPIMuteState
+        --if GPIMuteState == "1" then print("GPI Mute is ON") elseif GPIMuteState == "0" then print("GPI Mute is OFF") end
+      end
+
+    -- Ethernet Enabled OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.56" then
+      EthernetEnabled = tostring(string.sub(response.Value, 2, -2))
+      if EthernetEnabled then
+        Controls["Ethernet Enabled"].Value = EthernetEnabled
+        --if EthernetEnabled == "1" then print("Ethernet ON (Enabled)") elseif EthernetEnabled == "0" then print("Ethernet OFF (Disabled)") end
+      end
+
+    -- Bluetooth Enabled OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.58" then
+      BluetoothEnabled = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothEnabled then
+        Controls["Bluetooth Enabled"].Value = BluetoothEnabled
+        --if BluetoothEnabled == "1" then print("Bluetooth ON") elseif BluetoothEnabled == "0" then print("Bluetooth OFF") end
+      end
+
+    -- Wifi Enabled OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.59" then
+      WifiEnabled = tostring(string.sub(response.Value, 2, -2))
+      if WifiEnabled then
+        Controls["Wifi Enabled"].Value = WifiEnabled
+        --if WifiEnabled == "1" then print("Wifi ON (Enabled)") elseif WifiEnabled == "0" then print("Wifi OFF (Disabled)") end
+      end
+
+    -- HDMI Enabled OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.201" then
+      HDMIEnabled = tostring(string.sub(response.Value, 2, -2))
+      if HDMIEnabled then
+        Controls["HDMI Enabled"].Value = HDMIEnabled
+        --if HDMIEnabled == "1" then print("HDMI Enabled") elseif HDMIEnabled == "0" then print("HDMI Disabled") end
+      end
+
+    -- USB Connected OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.54" then
+      USBConnected = tostring(string.sub(response.Value, 2, -2))
+      if USBConnected then
+        Controls["USB Connected"].Value = USBConnected
+        --if USBConnected == "1" then print("USB Connected") elseif USBConnected == "0" then print("USB Not Connected") end
+      end
+
+    -- USB Call Status OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.55" then
+      USBCall = tostring(string.sub(response.Value, 2, -2))
+      if USBCall then
+        Controls["USB Call Status"].Value = USBCall
+        --if USBCall == "1" then print("USB Call Connected") elseif USBCall == "0" then print("USB Call Not Connected") end
+      end
+
+    -- Microphone Mute OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.2" then
+      MicMute = tostring(string.sub(response.Value, 2, -2))
+      if MicMute then
+        Controls["Microphone Mute"].Value = MicMute
+        --if MicMute == "1" then print("Microphone Muted") elseif MicMute == "0" then print("Microphone Unmuted") end
+      end
+
+    -- Speaker Mute OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.51" then
+      SpeakerMute = tostring(string.sub(response.Value, 2, -2))
+      if SpeakerMute then
+        Controls["Speaker Mute"].Value = SpeakerMute
+        --if SpeakerMute == "1" then print("Speaker Muted") elseif SpeakerMute == "0" then print("Speaker Unmuted") end
+      end
+
+    -- Speaker Volume OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.3" then
+      SpeakerVolume = tostring(string.sub(response.Value, 2, -2))
+      if SpeakerVolume then
+        Controls["Speaker Volume"].Value = SpeakerVolume
+        --print("Speaker Volume: "..SpeakerVolume)
+      end
+
+    -- Acoustic Echo Cancellation OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.61" then
+      AEC = tostring(string.sub(response.Value, 2, -2))
+      if AEC then
+        Controls["Acoustic Echo Cancellation"].Value = AEC
+        --if AEC == "1" then print("AEC is ON") elseif AEC == "0" then print("AEC if OFF") end
+      end
+
+    -- Room Compensation OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.221" then
+      RoomCompensation = tostring(string.sub(response.Value, 2, -2))
+      if RoomCompensation then
+        Controls["Room Compensation"].Value = AEC
+        --if RoomCompensation == "1" then print("Room Compensation is ON") elseif RoomCompensation == "0" then print("Room Compensation if OFF") end
+      end
+
+    -- Low Light Compensation OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.89" then
+      LowLightCompensation = tostring(string.sub(response.Value, 2, -2))
+      if LowLightCompensation then
+        Controls["Low Light Compensation"].Value = LowLightCompensation
+        --if LowLightCompensation == "1" then print("Low Light Compensation is ON") elseif LowLightCompensation == "0" then print("Low Light Compensation if OFF") end
+      end
+
+    -- Backlight Compensation OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.196" then
+      BacklightCompensation = tostring(string.sub(response.Value, 2, -2))
+      if BacklightCompensation then
+        Controls["Backlight Compensation"].String = BacklightCompensation:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Backlight Compensation is "..BacklightCompensation:gsub("^%l", string.upper))
+      end
+
+    -- Power Line Frequency / Anitflicker OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.90" then
+      PowerLineFrequency = tostring(string.sub(response.Value, 2, -2))
+      if PowerLineFrequency == "50" or PowerLineFrequency == "60" then
+        Controls["Power Line Frequency"].String = PowerLineFrequency.."Hz"
+        --print("Power Line Frequency: "..PowerLineFrequency.."Hz")
+        elseif PowerLineFrequency then
+        Controls["Power Line Frequency"].String = PowerLineFrequency:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Power Line Frequency: "..PowerLineFrequency:gsub("^%l", string.upper))
+      end
+
+    -- Brightness OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.92" then
+      Brightness = tostring(string.sub(response.Value, 2, -2))
+      if Brightness then
+        Controls["Brightness"].Value = Brightness
+        --print("Brightness: "..Brightness)
+      end
+
+    -- Contrast OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.93" then
+      Contrast = tostring(string.sub(response.Value, 2, -2))
+      if Contrast then
+        Controls["Contrast"].Value = Contrast
+        --print("Contrast: "..Contrast)
+      end
+
+    -- Saturation OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.94" then
+      Saturation = tostring(string.sub(response.Value, 2, -2))
+      if Saturation then
+        Controls["Saturation"].Value = Saturation
+        --print("Saturation: "..Saturation)
+      end
+
+    -- Sharpness OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.95" then
+      Sharpness = tostring(string.sub(response.Value, 2, -2))
+      if Sharpness then
+        Controls["Sharpness"].Value = Sharpness
+        --print("Sharpness: "..Sharpness)
+      end
+
+    -- Camera Zoom OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.6" then
+      CameraZoom = tonumber(string.sub(response.Value, 2, -2))
+      if CameraZoom then
+        Controls["Camera Zoom"].Value = CameraZoom
+        --print("Camera Zoom Value: "..CameraZoom)
+      end
+
+    -- Camera Pan OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.7" then
+      CameraPan = tonumber(string.sub(response.Value, 2, -2))
+      if CameraPan then
+        Controls["Camera Pan"].Value = CameraPan
+        --print("Camera Pan Value: "..CameraPan)
+      end
+
+    -- Camera Tilt OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.8" then
+      CameraTilt = tonumber(string.sub(response.Value, 2, -2))
+      if CameraTilt then
+        Controls["Camera Tilt"].Value = CameraTilt
+        --print("Camera Tilt Value: "..CameraTilt)
+      end
+
+    -- Preset Active OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.19" then
+      PresetActive = tonumber(string.sub(response.Value, 2, -2))
+      if PresetActive then
+        Controls["Preset Active"][PresetActive].Boolean = true
+
+        -- For Loop to set Preset Active LEDs to false if they're not the active preset.
+        for i, c in ipairs(Controls["Preset Active"]) do
+          if i ~= PresetActive then 
+            c.Boolean = false
+          end
+        end
+
+        --print("Active Camera Preset: "..PresetActive)
+      end
+
+    -- Preset PTZ Positions (Home Preset) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.86" then
+      PresetHomePosition = tostring(string.sub(response.Value, 2, -2))
+      if PresetHomePosition then
+        --print("Preset Home PTZ Position: "..PresetHomePosition)
+      end
+
+    -- Preset PTZ Positions (Preset 1) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.87" then
+      Preset1Position = tostring(string.sub(response.Value, 2, -2))
+      if Preset1Position then
+        --print("Preset 1 PTZ Position: "..Preset1Position)
+      end
+
+    -- Preset PTZ Positions (Preset 2) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.88" then
+      Preset2Position = tostring(string.sub(response.Value, 2, -2))
+      if Preset2Position then
+        --print("Preset 2 PTZ Position: "..Preset2Position)
+      end
+      
+    -- Camera State OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.96" then
+      CameraState = tostring(string.sub(response.Value, 2, -2))
+      if CameraState then
+        Controls["Camera State"].String = CameraState:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Camera State: "..CameraState:gsub("^%l", string.upper))
+      end
+
+    -- Camera Autoframing OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.25" then
+      CameraAutoframing = tostring(string.sub(response.Value, 2, -2))
+      if CameraAutoframing then
+        Controls["Camera Autoframing"].Value = CameraAutoframing
+        --if CameraAutoframing == "1" then print("Camera Autoframing: ON") elseif CameraAutoframing == "0" then print("Camera Autoframing: OFF") end
+      end
+  
+    -- Camera Autoframing Access OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.26" then
+      CameraAutoframingAccess = tostring(string.sub(response.Value, 2, -2))
+      if CameraAutoframingAccess then
+        Controls["Camera Autoframing Access"].Value = CameraAutoframingAccess
+        --if CameraAutoframingAccess == "1" then print("Camera Autoframing Access: ON") elseif CameraAutoframingAccess == "0" then print("Camera Autoframing Access: OFF") end
+      end
+
+    -- Camera Autoframe Border Size OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.132" then
+      CameraAutoframeBorderSize = tostring(string.sub(response.Value, 2, -2))
+      if CameraAutoframeBorderSize then
+        Controls["Camera Autoframe Border Size"].String = CameraAutoframeBorderSize:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Camera Autoframe Border Size: "..CameraAutoframeBorderSize:gsub("^%l", string.upper))
+      end
+
+    -- Camera Autoframe Headroom OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.133" then
+      CameraAutoframeHeadroom = tostring(string.sub(response.Value, 2, -2))
+      if CameraAutoframeHeadroom then
+        Controls["Camera Autoframe Headroom"].String = CameraAutoframeHeadroom:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Camera Autoframe Headroom: "..CameraAutoframeHeadroom:gsub("^%l", string.upper))
+      end
+
+    -- Camera Autoframe Pan Tilt Speed OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.130" then
+      CameraAutoframePTSpeed = tostring(string.sub(response.Value, 2, -2))
+      if CameraAutoframePTSpeed then
+        Controls["Camera Autoframe Pan Tilt Speed"].String = CameraAutoframePTSpeed:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Camera Autoframe Pan/Tilt Speed: "..CameraAutoframePTSpeed:gsub("^%l", string.upper))
+      end
+
+    -- Camera Autoframe Zoom Speed OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.131" then
+      CameraAutoframeZoomSpeed = tostring(string.sub(response.Value, 2, -2))
+      if CameraAutoframeZoomSpeed then
+        Controls["Camera Autoframe Zoom Speed"].String = CameraAutoframeZoomSpeed:gsub("^%l", string.upper) --< gsub: used to make the first character of the response upper case
+        --print("Camera Autoframe Zoom Speed: "..CameraAutoframeZoomSpeed:gsub("^%l", string.upper))
+      end
+
+    -- Bluetooth State (on / off) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.103" then
+      BluetoothState = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothState then
+        Controls["Bluetooth State"].Value = BluetoothState
+        --if BluetoothState == "1" then print("Bluetooth & BLE: ON") elseif BluetoothState == "0" then print("Bluetooth & BLE: OFF") end
+      end
+
+    -- Bluetooth Pairing (on / off) OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.20" then
+      BluetoothPairing = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothPairing then
+        Controls["Bluetooth Pairing"].Value = BluetoothPairing
+        --if BluetoothPairing == "1" then print("Bluetooth Pairing: ON") elseif BluetoothPairing == "0" then print("Bluetooth Pairing: OFF") end
+      end
+
+    -- Bluetooth Paired Device Name OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.106" then
+      BluetoothDevice = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothDevice then
+        if BluetoothDevice == "" then
+          Controls["Bluetooth Paired Device"].String = ""
+          --print("No Bluetooth Paired Device")
+          else
+          Controls["Bluetooth Paired Device"].String = BluetoothDevice
+          --print("Bluetooth Paired Device: "..BluetoothDevice)
+        end
+      end
+
+    -- Bluetooth Connected OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.107" then
+      BluetoothConnected = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothConnected then
+        Controls["Bluetooth Connected"].Value = BluetoothConnected
+        --if BluetoothConnected == "1" then print("Bluetooth Connected") elseif BluetoothConnected == "0" then print("Bluetooth Not Connected") end
+      end
+
+    -- Bluetooth Stream State OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.194" then
+      BluetoothStream = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothStream then
+        Controls["Bluetooth Streaming"].Value = BluetoothStream
+        --if BluetoothStream == "1" then print("Bluetooth Streaming") elseif BluetoothStream == "0" then print("Bluetooth Not Streaming") end
+      end
+
+    -- Bluetooth Call State OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.108" then
+      BluetoothCall = tostring(string.sub(response.Value, 2, -2))
+      if BluetoothCall then
+        Controls["Bluetooth Call Status"].Value = BluetoothCall
+        --if BluetoothCall == "1" then print("Bluetooth Call Connected") elseif BluetoothCall == "0" then print("Bluetooth Call Not Connected") end
+      end
+
+    -- People Present OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.220" then
+      PeoplePresent = tostring(string.sub(response.Value, 2, -2))
+      if PeoplePresent then
+        Controls["People Present"].Value = PeoplePresent
+        --if PeoplePresent == "1" then print("People Present: YES") elseif PeoplePresent == "0" then print("People Present: NO") end
+      end
+
+    -- People Count OID
+    elseif response.OID == "iso.3.6.1.4.1.6036.727.218" then
+      PeopleCount = tostring(string.sub(response.Value, 2, -2))
+      if PeopleCount then
+        Controls["People Count"].Value = PeopleCount
+        print("People Counted: "..PeopleCount)
+        
+      -- Start the Timer to check and log people counts
+      peopleCountTimer:Start(Controls["People Count Check"].Value)   
+      end
+    end
+
+    --[[ If there is no error with the SNMP response, run the Connected() function that will SetStatus to OK]]--
+    if (response.Error) == nil then
+      Connected()
+      -- Start the OIDpoll_timer again. Have inserted this Stop() and Start() into the requestSNMP() function to allow for running changes if someone changes the 'Delay Between Commands'. (ie. script doesn't need to be restarted).
+      OIDpoll_timer:Start(Controls["Delay Between Commands"].String)
+
+      -- Reset TimeOutCount to zero as connection is successful.
+      TimeOutCount = 0
+    end
+  end
+end
+
+
+
+
+---- OID Response Handler ----
+---- Will print SNMP response details if the print console log lines aren't commented out.
+function myCallback(dataout)
+  --print(('Data [%s]'):format(dataout))
+  --print("Data Start")
+  for k,v in pairs(dataout) do
+    --print(k,v)
+  end
+  --print("Data End")
+end
+    
+
+----- Starts the SNMP Session, triggered by the Connect() function  -----
+function StartSNMPSession()
+  ------- SNMP Session v3 (no auth, no priv) -------
+  snmp_session = SNMPSession.New(SNMP.SessionType.v3) -- Create a new SNMP session.
+  --snmp_session = SNMPSession.New(SNMP.SessionType.v2c)
+
+  snmp_session:setHostName(Controls["IP Address"].String:match('(%d?%d?%d%.%d?%d?%d%.%d?%d?%d%.%d?%d?%d)')) --[[ to ensure valid IP address ]]
+  --snmp_session:setHostName(Controls["IP Address"].String) -- hostname is not required to receive a v3 SNMP Trap
+
+  snmp_session:setAuthType(authtypedata[Controls["SNMP Authentication Type"].String]) -- For SNMP v3 only, set the authorization type for the session.
+  --snmp_session:setAuthType(SNMP.AuthType.AuthNo)
+  --snmp_session:setAuthType(SNMP.AuthType.AuthNoPriv)
+  --snmp_session:setAuthType(SNMP.AuthType.AuthPriv)
+
+  snmp_session:setAuthProt(authprotdata[Controls["SNMP Authentication Protocol"].String]) -- For SNMP v3 only, set the authorization protocol for the session.
+  --snmp_session:setAuthProt(SNMP.AuthProtocol.NoAuth)
+  --snmp_session:setAuthProt(SNMP.AuthProtocol.MD5)
+  --snmp_session:setAuthProt(SNMP.AuthProtocol.SHA)
+
+  snmp_session:setPrivProt(authprivdata[Controls["SNMP Privacy Protocol"].String]) -- For SNMP v3 only, set the privacy protocol for the session.
+  --snmp_session:setPrivProt(SNMP.PrivProtocol.NoAuth)
+  --snmp_session:setPrivProt(SNMP.PrivProtocol.AES)
+  --snmp_session:setPrivProt(SNMP.PrivProtocol.DES)
+
+  snmp_session:setUserName(Controls["SNMP Username"].String) -- For SNMP v3 only, set the user name for the session.
+  snmp_session:setPassPhrase(Controls["SNMP Authentication Password"].String) -- For SNMP v3 only, set the authorization pass phrase for the session.
+  snmp_session:setPrivPassPhrase(Controls["SNMP Privacy Password"].String) -- For SNMP v3 only, set the privacy pass phrase for the session.
+  
+  snmp_session:startSession()
+  
+end
+
+
+----- Executes when 'Connect' button Boolean is pressed -----
+function Connect()
+  
+  --[[ check if the connect button is true or false, if false return here; SetStatus via Initialize function ]]
+  if not Controls["Connect"].Boolean then
+    Initialize()
+    return print("INITIALIZED")
+  end
+  
+  --[[ validate the IP address ]]
+  ip = Controls['IP Address'].String:match('(%d?%d?%d%.%d?%d?%d%.%d?%d?%d%.%d?%d?%d)');
+  
+  --[[ if valid set control blue ]]
+  Controls["IP Address"].Color = 'Blue'
+  --SetStatus(5, "Connecting to.." ..Controls['IP Address'].String)
+  
+  --[[ if IP is not valid, set status and stop the function by using ‘return’ ]]
+  if not ip then
+    --[[ update the 'Status' indicator output]]
+    SetStatus(3, "IP Address Invalid: "..Controls['IP Address'].String)
+    --Controls["Connect"].Boolean = false
+    Controls["Connected"].Boolean = false
+    Controls["IP Address"].Color = 'red'
+    return print("User Error: IP address invalid "..Controls['IP Address'].String)
+  end
+  
+  --[[ start the snmp_sesssion and the timer that will run requestSNMP ]]
+  if Controls["Connect"].Boolean then
+    StartSNMPSession()
+    OIDpoll_timer:Start(Controls["Delay Between Commands"].String)
+    SNMPresponse_timer:Start(20)
+    print("OIDpoll_timer STARTED!")
+  end
+
+end
+
+
+----- Executes when snmp_session.EventHandler = function(response), response.Error has no errors -----
+function Connected()
+        
+  --[[ update controls ]]
+  Controls["Connect"].Boolean = true
+  Controls["Connected"].Boolean = true
+  Controls["IP Address"].Color = "#FF009F3C"
+ 
+  --[[ update the 'Status' indicator output]]
+  SetStatus(0, string.format("", code))
+end
+
+
+----- Executes when Script begins ------
+function Initialize()
+
+  --[[ stop polling ]]
+  OIDpoll_timer:Stop()
+  SNMPresponse_timer:Stop()
+  peopleCountTimer:Stop()
+
+  --[[ clear the ActiveQueryList ]]
+  ActiveQueryList = {}
+  listPtr = 1
+  
+  --[[ reset controls ]]
+  ResetTextIndicators()
+  Controls["Backlight Compensation"].Choices = {}
+  --Controls["Connect"].Boolean = false
+  Controls["Connected"].Boolean = false
+  Controls["IP Address"].Color = "red"
+
+  --[[ set Status to Initializing ]]
+  --SetStatus(5, "Connecting...") 
+
+  --[[ validate the IP address ]]
+  ip = Controls['IP Address'].String:match('(%d?%d?%d%.%d?%d?%d%.%d?%d?%d%.%d?%d?%d)');
+    if ip then
+        --[[ if Connect boolean is true, run Connect() function]]
+        if Controls["Connect"].Boolean then
+          Connect()
+        else
+          SetStatus(3, "Component Manually Disconnected")    
+        end
+      else
+      --[[ update the 'Status' indicator output]]
+      SetStatus(3, "Component Manually Disconnected - IP Address Invalid: "..Controls['IP Address'].String)           
+    end
+    
+end
+
+
+----- Executes inside the Initialize function - Clears .String on the controls -------
+function ResetTextIndicators()
+  for i, control_name in ipairs(TextIndicators) do
+    Controls[control_name].String = ""
+  end
+  for i, control_name in ipairs(IntegerIndicators) do
+    Controls[control_name].Value = 0
+  end
+
+  for i, v in pairs(Controls["Preset Active"]) do
+    Controls["Preset Active"][i].Boolean = false
+  end
+end
+
+
+----- Sets Status of device for Monitoring Proxy & Core Manager
+function SetStatus(code, message)
+
+  Controls["Status"].Value = code
+
+  -- Controls["People Count"].String added to end of Status if Model# is VB1
+  if (code == 0) then
+    if Controls["Model Number"].String == "VB1" then
+      Controls["Status"].String = string.format("%s%s%s", message, (message == "") and "" or ": ", ip and ip or "None").." - People Count: "..Controls["People Count"].String
+    else
+      Controls["Status"].String = string.format("%s%s%s", message, (message == "") and "" or ": ", ip and ip or "None")
+    end
+  end
+  
+  if (code ~= 0) then 
+    Controls["Status"].String = string.format("%s%s%s", message, (message == "") and "" or ": ", ip and ip or "None")
+  end
+
+  print(string.format("User.Info: Settings Status with Code: '%d', Message: '%s'", code, message))
+
+end
+
+
+function EventLog(log, severity)
+  Controls["Log Entry"].String = string.format("%s: %s", Controls["Event Log Prefix"].String, log)
+  Controls["Log Severity"].String = severity
+  Controls["Log Trigger"]:Trigger()
+end
+
+
+-- Will Log an Event if the number of people counted changes. PeopleCount is "0" when script starts.
+function PeopleCountEventLog()
+  if Controls["People Count Event Log"].Boolean == true then
+    print("People Count Timer expired: "..math.floor(Controls["People Count Check"].Value).. " seconds.")
+    if PeopleCount ~= math.floor(Controls["People Count"].Value) then
+      print("People Count Event Log Created. People Counted = "..PeopleCount)
+      EventLog("People Count = "..math.floor(Controls["People Count"].Value), "normal")
+      PeopleCount = math.floor(Controls["People Count"].Value)
+    end
+  end
+end 
+
+
+
+---- Timers ----
+OIDpoll_timer = Timer.New()
+--OIDpoll_timer:Start(Controls["Delay Between Commands"].String) -- Moved to Connect() function.
+OIDpoll_timer.EventHandler = requestSNMP
+
+--[[ If no SNMP response is received after set time, the timer will call the SNMPnoresponse function that will SetStatus to Fault.]]--
+function SNMPnoresponse()
+  SetStatus(2, "Error receiving SNMP OID responses from: "..Controls["IP Address"].String)
+  Connect()
+end
+
+SNMPresponse_timer = Timer.New()
+--SNMPresponse_timer:Start(5) -- Moved to requestSNMP() function, under the snmp_session.EventHandler
+SNMPresponse_timer.EventHandler = SNMPnoresponse
+
+peopleCountTimer = Timer.New()
+-- Runs People Count Event Log after the peopleCountTimer has elapsed.
+peopleCountTimer.EventHandler = PeopleCountEventLog
+
+presetTimer = Timer.New()
+
+
+--- EventHandlers ---
+
+-- '.1.3.6.1.4.1.6036.727.37', -- system.name - Name - "Human readable name of the device so it can be uniquely identified over external interfaces."
+Controls["Name"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.37", Controls["Name"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Device Name changed to "..Controls["Name"].String..". Device Rebooting..")
+
+    -- Device Reboots
+    -- Timer.CallAfter allows time for the setRequest command to send, then stop and start polling timers.
+    Timer.CallAfter(function()
+      OIDpoll_timer:Stop()
+      SNMPresponse_timer:Stop()
+      peopleCountTimer:Stop()
+      SetStatus(5, "Device Rebooted")
+      OIDpoll_timer:Start(70)
+    end, 3)
+end
+
+-- '.1.3.6.1.4.1.6036.727.40', -- system.building - Building - "Human readable building location of the device."
+Controls["Building"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.40", Controls["Building"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Device Location (Building) changed to "..Controls["Building"].String)
+end
+
+-- '.1.3.6.1.4.1.6036.727.39', -- system.floor - Floor - "Human readable floor location of the device."
+Controls["Floor"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.39", Controls["Floor"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Device Location (Floor) changed to "..Controls["Floor"].String)
+end
+
+-- '.1.3.6.1.4.1.6036.727.38', -- system.room - Room - "Human readable room location of the device."
+Controls["Room"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.38", Controls["Room"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Device Location (Room) changed to "..Controls["Room"].String)
+end
+
+-- '.1.3.6.1.4.1.6036.727.223', -- system.maxOccupancy - Capacity - "Room maximum occupancy of the device."
+Controls["Capacity"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.223", Controls["Capacity"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Device Location (Room Capacity) changed to "..Controls["Capacity"].String)
+end
+
+-- '.1.3.6.1.4.1.6036.727.4', -- audio.loudspeakerVolumeUp - Speaker Volume + - "Increases the system loudspeaker volume by one step."
+Controls["Speaker Volume +"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.4", "", SNMP.SNMPDataType.octet_string, myCallback)
+    print("Speaker volume increased by 1")
+end
+
+-- '.1.3.6.1.4.1.6036.727.5', -- audio.loudspeakerVolumeDown - Speaker Volume - - "Decreases the system loudspeaker volume by one step."
+Controls["Speaker Volume -"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.5", "", SNMP.SNMPDataType.octet_string, myCallback)
+    print("Speaker volume decreased by 1")
+end
+
+-- '.1.3.6.1.4.1.6036.727.2', -- audio.micMute - Microphone Mute - "Mutes/unmutes the system microphone."
+Controls["Microphone Mute"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.2", math.floor(Controls["Microphone Mute"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Microphone Mute"].Boolean == true then
+      print("Microphone Muted")
+    elseif Controls["Microphone Mute"].Boolean == false then
+      print("Microphone Unmuted")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.51', -- audio.loudspeakerMute - Speaker Mute - "Mutes/unmutes the system loudspeaker."
+Controls["Speaker Mute"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.51", math.floor(Controls["Speaker Mute"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Speaker Mute"].Boolean == true then
+      print("Speaker Muted")
+    elseif Controls["Microphone Mute"].Boolean == false then
+      print("Speaker Unmuted")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.3', -- audio.loudspeakerVolume - Speaker Volume - "Sets the system loudspeaker volume."
+Controls["Speaker Volume"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.3", math.floor(Controls["Speaker Volume"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Speaker Volume changed to "..math.floor(Controls["Speaker Volume"].Value))
+end
+
+-- '.1.3.6.1.4.1.6036.727.61', -- behavior.aecEnabled - Acoustic Echo Cancellation - "Turns on/off the acoustic echo canceller."
+Controls["Acoustic Echo Cancellation"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.61", math.floor(Controls["Acoustic Echo Cancellation"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Acoustic Echo Cancellation"].Boolean == true then
+      print("AEC is ON")
+    elseif Controls["Acoustic Echo Cancellation"].Boolean == false then
+      print("AEC is OFF")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.221', -- audio.roomCompensation - Room Compensation - "Enables processing to compensate for very reverberant rooms."
+Controls["Room Compensation"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.221", math.floor(Controls["Room Compensation"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Room Compensation"].Boolean == true then
+      print("Room Compensation is ON")
+    elseif Controls["Room Compensation"].Boolean == false then
+      print("Room Compensation is OFF")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.89', -- camera.lowLightCompensationState - Low Light Compensation - "Tunrs on/off camera low light compensation."
+Controls["Low Light Compensation"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.89", math.floor(Controls["Low Light Compensation"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Low Light Compensation"].Boolean == true then
+      print("Low Light Compensation is ON")
+    elseif Controls["Low Light Compensation"].Boolean == false then
+      print("Low Light Compensation is OFF")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.196', -- camera.backlightCompensation - Backlight Compensation - "Sets compensation for bright backgrounds."
+Controls["Backlight Compensation"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.196", Controls["Backlight Compensation"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Backlight Compensation is "..Controls["Backlight Compensation"].String)
+end
+
+-- '.1.3.6.1.4.1.6036.727.90', -- camera.antiflicker - Power Line Frequency - "Sets power line frequency value to reduce anti flicker."
+Controls["Power Line Frequency"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.90", Controls["Power Line Frequency"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Power Line Frequency is "..Controls["Power Line Frequency"].String)
+end
+
+--'.1.3.6.1.4.1.6036.727.92', -- camera.brightness - Brightness - "Sets image brightness."
+Controls["Brightness"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.92", math.floor(Controls["Brightness"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Brightness changed to "..math.floor(Controls["Brightness"].Value))
+end
+
+--'.1.3.6.1.4.1.6036.727.93', -- camera.contrast - Contrast - "Sets image contrast."
+Controls["Contrast"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.93", math.floor(Controls["Contrast"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Contrast changed to "..math.floor(Controls["Contrast"].Value))
+end
+
+--'.1.3.6.1.4.1.6036.727.94', -- camera.saturation - Saturation - "Sets image saturation."
+Controls["Saturation"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.94", math.floor(Controls["Saturation"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Saturation changed to "..math.floor(Controls["Saturation"].Value))
+end
+
+--'.1.3.6.1.4.1.6036.727.95', -- camera.sharpness - Sharpness - "Sets image sharpness."
+Controls["Sharpness"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.95", math.floor(Controls["Sharpness"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Sharpness changed to "..math.floor(Controls["Sharpness"].Value))
+end
+
+-- '.1.3.6.1.4.1.6036.727.25', -- autoframing.state - Camera Autoframing - "Turn on/off the camera autoframing feature."
+Controls["Camera Autoframing"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.25", math.floor(Controls["Camera Autoframing"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Camera Autoframing"].Boolean == true then
+      print("Camera Autoframing turned: ON")
+    elseif Controls["Camera Autoframing"].Boolean == false then
+      print("Camera Autoframing turned: OFF")
+    end
+end
+
+--'.1.3.6.1.4.1.6036.727.26', -- behavior.autoframingEnabled - Camera Autoframing Access - "Turns on/off autoframing access."
+Controls["Camera Autoframing Access"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.26", math.floor(Controls["Camera Autoframing Access"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Camera Autoframing Access"].Boolean == true then
+      print("Camera Autoframing Access turned: ON")
+    elseif Controls["Camera Autoframing Access"].Boolean == false then
+      print("Camera Autoframing Access turned: OFF")
+    end
+end
+
+--'.1.3.6.1.4.1.6036.727.132', -- autoframing.border - Camera Autoframe Border Size - "Describes how agressive the algorithm is in framing content."
+Controls["Camera Autoframe Border Size"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.132", Controls["Camera Autoframe Border Size"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Autoframe Border Size: "..Controls["Camera Autoframe Border Size"].String)
+end
+
+--'.1.3.6.1.4.1.6036.727.133', -- autoframing.headroom - Camera Autoframe Headroom - "Headroom adjustment for participants when autoframing."
+Controls["Camera Autoframe Headroom"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.133", Controls["Camera Autoframe Headroom"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Autoframe Headroom: "..Controls["Camera Autoframe Headroom"].String)
+end
+
+--'.1.3.6.1.4.1.6036.727.130', -- autoframing.panTiltSpeed - Camera Autoframe Pan Tilt Speed - "Pan and tilt speed for autoframing."
+Controls["Camera Autoframe Pan Tilt Speed"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.130", Controls["Camera Autoframe Pan Tilt Speed"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Autoframe Pan Tilt Speed: "..Controls["Camera Autoframe Pan Tilt Speed"].String)
+end
+
+--'.1.3.6.1.4.1.6036.727.131', -- autoframing.zoomSpeed - Camera Autoframe Zoom Speed - "Zoom for autoframing."
+Controls["Camera Autoframe Zoom Speed"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.131", Controls["Camera Autoframe Zoom Speed"].String, SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Autoframe Zoom Speed: "..Controls["Camera Autoframe Zoom Speed"].String)
+end
+
+-- '.1.3.6.1.4.1.6036.727.6', -- camera.zoom - Camera Zoom - "Contains the current camera zoom value."
+Controls["Camera Zoom"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.6", math.floor(Controls["Camera Zoom"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Zoom changed to "..math.floor(Controls["Camera Zoom"].Value))
+end
+
+-- '.1.3.6.1.4.1.6036.727.9', -- camera.zoomIn - Zoom (In, Out) - "Zooms camera in by one step."
+-- '.1.3.6.1.4.1.6036.727.10', -- camera.zoomOut - Zoom (In, Out) - "Zooms camera out by one step."
+Controls["Zoom (In, Out)"][1].Legend = "+"
+Controls["Zoom (In, Out)"][2].Legend = "-"
+
+for i, ctl in ipairs(Controls["Zoom (In, Out)"]) do
+  ctl.EventHandler = function(c)
+    local Zoom = {"9", "10"}
+    local action = Zoom[i]
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727."..action, "", SNMP.SNMPDataType.octet_string, myCallback)
+    if action == "9" then
+      print("Camera Zoom Increased")
+    elseif action == "10" then
+      print("Camera Zoom Decreased")
+    end
+  end
+end
+
+-- '.1.3.6.1.4.1.6036.727.7', -- camera.pan - Camera Pan - "Contains the current camera pan value."
+Controls["Camera Pan"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.7", math.floor(Controls["Camera Pan"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Pan changed to "..math.floor(Controls["Camera Pan"].Value))
+end
+
+-- '.1.3.6.1.4.1.6036.727.8', -- camera.tilt - Camera Tilt - "Contains the current camera tilt value."
+Controls["Camera Tilt"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.8", math.floor(Controls["Camera Tilt"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    print("Camera Tilt changed to "..math.floor(Controls["Camera Tilt"].Value))
+end
+
+-- '.1.3.6.1.4.1.6036.727.13', -- camera.tiltUp - Pan/Tilt (Up, Down, Left, Right) - "Tilts camera up by one step."
+-- '.1.3.6.1.4.1.6036.727.14', -- camera.tiltDown - Pan/Tilt (Up, Down, Left, Right) - "Tilts camera down by one step."
+-- '.1.3.6.1.4.1.6036.727.11', -- camera.panLeft - Pan/Tilt (Up, Down, Left, Right) - "Pans camera left by one step."
+-- '.1.3.6.1.4.1.6036.727.12', -- camera.panRight - Pan/Tilt (Up, Down, Left, Right) - "Pans camera right by one step."
+Controls["Pan/Tilt (Up, Down, Left, Right)"][1].Legend = "Up"
+Controls["Pan/Tilt (Up, Down, Left, Right)"][2].Legend = "Down"
+Controls["Pan/Tilt (Up, Down, Left, Right)"][3].Legend = "Left"
+Controls["Pan/Tilt (Up, Down, Left, Right)"][4].Legend = "Right"
+
+for i, ctl in ipairs(Controls["Pan/Tilt (Up, Down, Left, Right)"]) do
+  ctl.EventHandler = function(c)
+    local Pan_Tilt = {"13", "14", "11", "12"}
+    local action = Pan_Tilt[i]
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727."..action, "", SNMP.SNMPDataType.octet_string, myCallback)
+    if action == "13" then
+      print("Camera Tilted Up")
+    elseif action == "14" then
+      print("Camera Tilted Down")
+    elseif action == "11" then
+      print("Camera Panned Left")
+    elseif action == "12" then
+      print("Camera Panned Right")
+    end
+  end
+end
+
+-- '.1.3.6.1.4.1.6036.727.19', -- camera.activePreset - Preset Active - "This is the active preset. Note: at camera start or restart the active preset is set to Home."
+-- '.1.3.6.1.4.1.6036.727.15', -- camera.applyActivePreset - Apply Active Preset - "This applies the active preset to the PTZ settings."
+-- '.1.3.6.1.4.1.6036.727.18', -- camera.savePresetHome - Preset (Press to Recall, Hold to Save) - "This takes the current PTZ values and saves them to the home(1) preset."
+-- '.1.3.6.1.4.1.6036.727.23', -- camera.savePresetFirst - Preset (Press to Recall, Hold to Save) - "This takes the current PTZ values and saves them to the first(2) preset."
+-- '.1.3.6.1.4.1.6036.727.24', -- camera.savePresetSecond - Preset (Press to Recall, Hold to Save) - "This takes the current PTZ values and saves them to the second(3) preset."
+for i, ctl in ipairs(Controls["Preset (Press to Recall, Hold to Save)"]) do
+
+  -- Add display numbers to each Preset button.
+  ctl.Legend = i
+
+  ctl.EventHandler = function(c)
+    
+    local PresetsSave = {"18", "23", "24"}
+    
+    -- If button is held for a 'long press', Set the Preset
+    presetTimer.EventHandler = function()
+      presetTimer:Stop()
+    
+      print("Setting Preset "..i)
+      isLongPress = true
+      
+      local action = PresetsSave[i]
+      snmp_session:setRequest(".1.3.6.1.4.1.6036.727."..action, "", SNMP.SNMPDataType.octet_string, myCallback)
+      
+    end
+    
+    -- If button is held, start 'long press' timer and return here
+    if c.Boolean then return presetTimer:Start(3) end
+    
+    -- If button is released and it was a 'long press', do nothing and return here
+    if isLongPress then isLongPress = false return end
+    
+    -- If button is released and it was a 'short press', Call the Preset
+    presetTimer:Stop()
+    print("User.Info: Calling Preset "..i)
+      
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.19", i, SNMP.SNMPDataType.octet_string, myCallback) -- This sets the active preset, or what will become the active preset.
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.15", "", SNMP.SNMPDataType.octet_string, myCallback) -- This applies the active preset to the PTZ settings
+
+  end
+end
+
+-- '.1.3.6.1.4.1.6036.727.201', -- behavior.hdmiEnabled - HDMI Enabled - "Turns on/off the HDMI." (Supported on VB1)
+Controls["HDMI Enabled"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.201", math.floor(Controls["HDMI Enabled"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["HDMI Enabled"].Boolean == true then
+      print("HDMI Enabled")
+    elseif Controls["HDMI Enabled"].Boolean == false then
+      print("HDMI Disabled")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.58', -- behavior.bluetoothEnabled - Bluetooth Enabled - "Turns on/off the system Bluetooth."
+Controls["Bluetooth Enabled"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.58", math.floor(Controls["Bluetooth Enabled"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Bluetooth Enabled"].Boolean == true then
+      print("Bluetooth Enabled")
+    elseif Controls["Bluetooth Enabled"].Boolean == false then
+      print("Bluetooth Disabled")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.20', -- bluetooth.pairingState - Bluetooth Pairing - "Bluetooth pairing state. The on state will allow pairing with the device for a fixed interval. Once the pairing interval is over, the state will change to off."
+Controls["Bluetooth Pairing"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.20", math.floor(Controls["Bluetooth Pairing"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Bluetooth Pairing"].Boolean == true then
+      print("Bluetooth Pairing: ON")
+    elseif Controls["Bluetooth Pairing"].Boolean == false then
+      print("Bluetooth Pairing: OFF")
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.228', -- bluetooth.disconnect - Bluetooth Disconnect Device - "Disconnect bluetooth device."
+-- REST API has the ability to send Values 1, 2 or 3 but no information on what these do. Value = 1 works and has been inserted below. SNMP Guide is incorrect/missing information.
+Controls["Bluetooth Disconnect Device"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.228", "1", SNMP.SNMPDataType.octet_string, myCallback)
+    print("Bluetooth device Disconnected")
+end
+
+-- '.1.3.6.1.4.1.6036.727.59', -- behavior.wifiEnabled - Wifi Enabled - "Turns on/off the system WiFi."
+Controls["Wifi Enabled"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.59", math.floor(Controls["Wifi Enabled"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Wifi Enabled"].Boolean == true then
+      print("Wifi ON (Enabled)")
+    elseif Controls["Wifi Enabled"].Boolean == false then
+      print("Wifi OFF (Disabled)")
+    end
+
+    -- Device becomes unresponsive to SNMP for a period of time after this command.
+    -- Timer.CallAfter allows time for the setRequest command to send, then stop and start polling timers.
+    Timer.CallAfter(function()
+      OIDpoll_timer:Stop()
+      SNMPresponse_timer:Stop()
+      peopleCountTimer:Stop()
+      --SetStatus(5, "Device Rebooted")
+      OIDpoll_timer:Start(30)
+    end, 2)
+end
+
+-- '.1.3.6.1.4.1.6036.727.56', -- behavior.ethernetEnabled - Ethernet Enabled - "Turns on/off the system Ethernet interface."
+-- To restore access, connect to Videobar via USB and use the Bose Work Configuration application.
+Controls["Ethernet Enabled"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.56", math.floor(Controls["Ethernet Enabled"].Value), SNMP.SNMPDataType.octet_string, myCallback)
+    if Controls["Ethernet Enabled"].Boolean == true then
+      print("Ethernet ON (Enabled)")
+    elseif Controls["Ethernet Enabled"].Boolean == false then
+      print("Ethernet OFF (Disabled)")
+        
+    -- Device loses all ethernet access.
+    -- Timer.CallAfter allows time for the setRequest command to send, then stop and start polling timers.
+    Timer.CallAfter(function()
+      OIDpoll_timer:Stop()
+      SNMPresponse_timer:Stop()
+      peopleCountTimer:Stop()
+      SetStatus(1, "Ethernet has been disabled. To enable, connect to Videobar via USB and use the Bose Work Configuration application.")
+      OIDpoll_timer:Start(60)
+    end, 2)
+      
+    end
+end
+
+-- '.1.3.6.1.4.1.6036.727.50', -- Reboot - system.reboot - Reboots the system. Response to this command is dealt with in the Result() function. SetStatus to Initializing, will stop and start the pollTimer.
+Controls["Reboot"].EventHandler = function(c)
+    snmp_session:setRequest(".1.3.6.1.4.1.6036.727.50", "", SNMP.SNMPDataType.octet_string, myCallback)
+    print("Reboot Triggered!")
+
+    -- Device Reboots    
+    -- Timer.CallAfter allows time for the setRequest command to send, then stop and start polling timers.
+    Timer.CallAfter(function()
+      OIDpoll_timer:Stop()
+      SNMPresponse_timer:Stop()
+      peopleCountTimer:Stop()
+      SetStatus(5, "Device Rebooted")
+      OIDpoll_timer:Start(70)
+    end, 3)
+end
+
+Controls["IP Address"].EventHandler = function()
+  Initialize()
+end
+
+Controls["Connect"].EventHandler = function()
+  Connect()
+end
+
+
+Initialize()
+Connect()
+
+end
